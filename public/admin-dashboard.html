@@ -1,0 +1,729 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support Hub | Admin Dashboard</title>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f6fa;
+      color: #172033;
+    }
+    .layout { display: flex; min-height: 100vh; }
+    aside {
+      width: 235px; background: #101a2c; color: white;
+      padding: 25px 16px; flex-shrink: 0;
+    }
+    .brand { font-size: 23px; font-weight: bold; margin: 0 8px 28px; }
+    .brand span { color: #2dd4bf; }
+    .nav {
+      display: block; width: 100%; border: 0; background: transparent;
+      color: #d4dce8; padding: 13px 12px; margin: 5px 0;
+      text-align: left; border-radius: 8px; cursor: pointer;
+    }
+    .nav:hover, .nav.active { background: #25364d; color: white; }
+    main { flex: 1; min-width: 0; }
+    header {
+      background: white; padding: 20px 28px; border-bottom: 1px solid #e2e8f0;
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    }
+    .content { padding: 25px 28px; }
+    .section { display: none; }
+    .section.active { display: block; }
+    h2 { font-size: 23px; margin-bottom: 8px; }
+    .muted { color: #64748b; font-size: 13px; }
+    .stats {
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 15px; margin: 22px 0;
+    }
+    .card, .panel {
+      background: white; border: 1px solid #e2e8f0;
+      border-radius: 12px; padding: 18px; margin-bottom: 20px;
+    }
+    .stat-number { font-size: 29px; font-weight: bold; margin-top: 13px; }
+    .panel-title { font-size: 16px; font-weight: bold; margin-bottom: 16px; }
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;
+    }
+    input, select, textarea {
+      width: 100%; padding: 11px; border: 1px solid #cbd5e1;
+      border-radius: 7px; background: white; font: inherit; font-size: 13px;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid #99f6e4; border-color: #0f766e;
+    }
+    .toolbar input, .toolbar select { width: auto; min-width: 170px; flex: 1; }
+    button { font: inherit; }
+    .btn {
+      border: 1px solid #cbd5e1; padding: 10px 14px;
+      border-radius: 7px; background: white; cursor: pointer;
+    }
+    .btn.primary { background: #0f766e; border-color: #0f766e; color: white; }
+    .btn:hover { opacity: .88; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 700px; }
+    th, td {
+      text-align: left; padding: 13px 12px;
+      border-bottom: 1px solid #e8edf3; font-size: 13px;
+    }
+    th { background: #f8fafc; color: #64748b; font-size: 11px; }
+    .badge {
+      display: inline-block; border-radius: 20px; padding: 5px 9px;
+      background: #e2e8f0; font-size: 11px;
+    }
+    .badge.open { background: #ffedd5; color: #9a3412; }
+    .badge.assigned { background: #dbeafe; color: #1d4ed8; }
+    .badge.completed { background: #dcfce7; color: #166534; }
+    .form-grid {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 15px;
+    }
+    .form-group label {
+      display: block; font-size: 13px; font-weight: bold; margin-bottom: 7px;
+    }
+    .form-group.full { grid-column: 1 / -1; }
+    .message { padding: 12px; border-radius: 7px; margin-bottom: 15px; display: none; }
+    .message.show { display: block; }
+    .message.error { background: #fee2e2; color: #991b1b; }
+    .message.success { background: #dcfce7; color: #166534; }
+    .empty { padding: 25px; text-align: center; color: #64748b; }
+    .hidden { display: none !important; }
+
+    @media (max-width: 900px) {
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      aside { width: 190px; }
+      .content { padding: 18px; }
+      header { padding: 17px; }
+    }
+    @media (max-width: 600px) {
+      .layout { display: block; }
+      aside { width: 100%; padding: 14px; }
+      .brand { margin-bottom: 12px; }
+      .nav-list { display: flex; flex-wrap: wrap; gap: 4px; }
+      .nav { width: auto; margin: 0; padding: 10px; }
+      .stats { gap: 9px; }
+      .card { padding: 13px; }
+      .stat-number { font-size: 24px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: auto; }
+    }
+  </style>
+</head>
+
+<body>
+<div class="layout">
+  <aside>
+    <div class="brand">Support <span>Hub</span></div>
+    <div class="nav-list">
+      <button class="nav active" data-section="overview">Dashboard</button>
+      <button class="nav" data-section="complaints">Complaints</button>
+      <button class="nav" data-section="engineers">Engineers</button>
+      <button class="nav" data-section="assignments">Assignments</button>
+    </div>
+    <div style="margin-top:25px">
+      <button class="btn" id="logoutButton" style="width:100%">Logout</button>
+    </div>
+  </aside>
+
+  <main>
+    <header>
+      <div>
+        <h2 id="pageTitle">Admin Dashboard</h2>
+        <div class="muted">Manage complaints, engineers and service areas</div>
+      </div>
+      <button class="btn" id="refreshButton">Refresh</button>
+    </header>
+
+    <div class="content">
+      <div id="globalMessage" class="message"></div>
+
+      <section class="section active" id="section-overview">
+        <h2>Overview</h2>
+        <p class="muted">Current complaint and service activity.</p>
+
+        <div class="stats">
+          <div class="card">
+            <div class="muted">Total complaints</div>
+            <div class="stat-number" id="totalCount">0</div>
+          </div>
+          <div class="card">
+            <div class="muted">Open complaints</div>
+            <div class="stat-number" id="openCount">0</div>
+          </div>
+          <div class="card">
+            <div class="muted">In progress</div>
+            <div class="stat-number" id="progressCount">0</div>
+          </div>
+          <div class="card">
+            <div class="muted">Completed</div>
+            <div class="stat-number" id="completedCount">0</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Recent complaints</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Complaint ID</th><th>Customer</th><th>Product</th><th>Location</th><th>Status</th></tr>
+              </thead>
+              <tbody id="recentTable">
+                <tr><td colspan="5" class="empty">Loading complaints...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="section-complaints">
+        <h2>All complaints</h2>
+        <p class="muted">Search complaints and view their current status.</p>
+        <div class="panel" style="margin-top:20px">
+          <div class="toolbar">
+            <input id="complaintSearch" placeholder="Search ID, customer, serial, pincode">
+            <select id="statusFilter">
+              <option value="">All statuses</option>
+              <option value="OPEN">Open</option>
+              <option value="ASSIGNED">Assigned</option>
+              <option value="ENGINEER_ACCEPTED">Engineer accepted</option>
+              <option value="VISIT_STARTED">Visit started</option>
+              <option value="RESOLUTION_SUBMITTED">Resolution submitted</option>
+              <option value="OTP_SENT">OTP sent</option>
+              <option value="COMPLETED">Completed</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th><th>Customer</th><th>Mobile</th><th>Product</th>
+                  <th>Serial number</th><th>Location</th><th>Proof</th><th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="complaintsTable">
+                <tr><td colspan="8" class="empty">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="section-engineers">
+        <h2>Engineers</h2>
+        <p class="muted">Create engineer accounts and set their service areas.</p>
+
+        <div class="panel" style="margin-top:20px">
+          <div class="panel-title">Add engineer</div>
+          <form id="engineerForm" class="form-grid">
+            <div class="form-group">
+              <label for="engineerName">Full name *</label>
+              <input id="engineerName" required>
+            </div>
+            <div class="form-group">
+              <label for="engineerMobile">Mobile *</label>
+              <input id="engineerMobile" required inputmode="tel">
+            </div>
+            <div class="form-group">
+              <label for="engineerEmail">Email</label>
+              <input id="engineerEmail" type="email">
+            </div>
+            <div class="form-group">
+              <label for="engineerPassword">Password *</label>
+              <input id="engineerPassword" type="password" required minlength="8" autocomplete="new-password">
+            </div>
+            <div class="form-group">
+              <label for="engineerState">Service state *</label>
+              <input id="engineerState" required placeholder="e.g. Uttar Pradesh">
+            </div>
+            <div class="form-group">
+              <label for="engineerDistrict">Service district *</label>
+              <input id="engineerDistrict" required placeholder="e.g. Bulandshahr">
+            </div>
+            <div class="form-group">
+              <label for="engineerCity">Service city *</label>
+              <input id="engineerCity" required placeholder="e.g. Bulandshahr">
+            </div>
+            <div class="form-group">
+              <label for="engineerPinCode">Service pincode *</label>
+              <input id="engineerPinCode" required inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit pincode">
+            </div>
+            <div class="form-group full">
+              <button class="btn primary" id="saveEngineerButton" type="submit">Create engineer</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Engineer accounts</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Name</th><th>Mobile</th><th>Service area</th><th>Status</th></tr>
+              </thead>
+              <tbody id="engineersTable">
+                <tr><td colspan="4" class="empty">Loading engineers...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="section-assignments">
+        <h2>Assign complaints</h2>
+        <p class="muted">Engineers matching the complaint location are shown first.</p>
+        <div class="panel" style="margin-top:20px">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>ID</th><th>Customer</th><th>Location</th><th>Product</th><th>Assigned engineer</th><th>Action</th></tr>
+              </thead>
+              <tbody id="assignmentsTable">
+                <tr><td colspan="6" class="empty">Loading assignments...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+"use strict";
+
+/*
+  Expected backend routes:
+  GET    /api/admin/complaints
+  GET    /api/admin/engineers
+  POST   /api/admin/engineers
+  PATCH  /api/admin/complaints/:complaintId/assign
+
+  This dashboard expects the admin token to be stored as:
+  sessionStorage.setItem("supportHubAdminToken", token)
+*/
+
+const API = {
+  complaints: "/api/admin/complaints",
+  engineers: "/api/admin/engineers"
+};
+
+const TOKEN_KEY = "supportHubAdminToken";
+let complaints = [];
+let engineers = [];
+
+const $ = id => document.getElementById(id);
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;",
+    '"': "&quot;", "'": "&#39;"
+  })[char]);
+}
+
+function getToken() {
+  return sessionStorage.getItem(TOKEN_KEY);
+}
+
+function getCustomer(item) {
+  return item.customer || {};
+}
+
+function complaintId(item) {
+  return item.complaintId || item._id || "—";
+}
+
+function customerName(item) {
+  const customer = getCustomer(item);
+  return customer.name || item.customerName || "Unknown customer";
+}
+
+function locationText(customer = {}) {
+  return [
+    customer.area, customer.city, customer.district,
+    customer.state, customer.pinCode
+  ].filter(Boolean).join(", ") || "Location not provided";
+}
+
+function engineerLocation(engineer = {}) {
+  return [
+    engineer.city, engineer.district, engineer.state, engineer.pinCode
+  ].filter(Boolean).join(", ") || "Service area not configured";
+}
+
+function engineerName(item) {
+  const assigned = item.engineer;
+  if (!assigned) return "Not assigned";
+
+  if (typeof assigned === "object") {
+    return assigned.name || "Assigned engineer";
+  }
+
+  const found = engineers.find(engineer => String(engineer._id) === String(assigned));
+  return found ? found.name : "Assigned engineer";
+}
+
+function statusLabel(status) {
+  return String(status || "UNKNOWN").replaceAll("_", " ");
+}
+
+function statusBadge(status) {
+  const normalized = String(status || "").toLowerCase();
+  let css = "badge";
+
+  if (normalized === "open") css += " open";
+  else if (normalized === "assigned") css += " assigned";
+  else if (normalized === "completed") css += " completed";
+
+  return `<span class="${css}">${escapeHTML(statusLabel(status))}</span>`;
+}
+
+function showMessage(message, type = "error") {
+  const box = $("globalMessage");
+  box.textContent = message;
+  box.className = `message show ${type}`;
+}
+
+function clearMessage() {
+  $("globalMessage").textContent = "";
+  $("globalMessage").className = "message";
+}
+
+async function apiRequest(url, options = {}) {
+  const token = getToken();
+
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers || {})
+    }
+  });
+
+  const text = await response.text();
+  let data = {};
+
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { message: text };
+  }
+
+  if (response.status === 401 || response.status === 403) {
+    sessionStorage.removeItem(TOKEN_KEY);
+    window.location.href = "/admin.html";
+    throw new Error("Admin session expired. Please log in again.");
+  }
+
+  if (!response.ok) {
+    throw new Error(data.message || data.error || `Request failed (${response.status})`);
+  }
+
+  return data;
+}
+
+function listFromResponse(data, key) {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data[key])) return data[key];
+  if (Array.isArray(data.data)) return data.data;
+  if (data.data && Array.isArray(data.data[key])) return data.data[key];
+  return [];
+}
+
+async function loadDashboard() {
+  clearMessage();
+
+  try {
+    const [complaintResponse, engineerResponse] = await Promise.all([
+      apiRequest(API.complaints),
+      apiRequest(API.engineers)
+    ]);
+
+    complaints = listFromResponse(complaintResponse, "complaints");
+    engineers = listFromResponse(engineerResponse, "engineers");
+
+    renderAll();
+  } catch (error) {
+    showMessage(error.message || "Could not load dashboard data.");
+  }
+}
+
+function renderOverview() {
+  $("totalCount").textContent = complaints.length;
+  $("openCount").textContent =
+    complaints.filter(item => item.status === "OPEN").length;
+
+  const activeStatuses = [
+    "ASSIGNED", "ENGINEER_ACCEPTED", "VISIT_STARTED",
+    "RESOLUTION_SUBMITTED", "OTP_SENT", "REVISIT_REQUIRED"
+  ];
+
+  $("progressCount").textContent =
+    complaints.filter(item => activeStatuses.includes(item.status)).length;
+
+  $("completedCount").textContent =
+    complaints.filter(item => item.status === "COMPLETED").length;
+
+  const recent = [...complaints]
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+    .slice(0, 6);
+
+  $("recentTable").innerHTML = recent.length ? recent.map(item => `
+    <tr>
+      <td>${escapeHTML(complaintId(item))}</td>
+      <td>${escapeHTML(customerName(item))}</td>
+      <td>${escapeHTML(item.product || item.model || "—")}</td>
+      <td>${escapeHTML(locationText(getCustomer(item)))}</td>
+      <td>${statusBadge(item.status)}</td>
+    </tr>
+  `).join("") : `<tr><td colspan="5" class="empty">No complaints found.</td></tr>`;
+}
+
+function renderComplaints() {
+  const query = $("complaintSearch").value.trim().toLowerCase();
+  const status = $("statusFilter").value;
+
+  const filtered = complaints.filter(item => {
+    const customer = getCustomer(item);
+    const text = [
+      complaintId(item), customer.name, customer.mobile,
+      customer.area, customer.city, customer.district, customer.state,
+      customer.pinCode, item.product, item.serialNumber, item.model, item.status
+    ].filter(Boolean).join(" ").toLowerCase();
+
+    return (!query || text.includes(query)) &&
+      (!status || item.status === status);
+  });
+
+  $("complaintsTable").innerHTML = filtered.length ? filtered.map(item => {
+    const customer = getCustomer(item);
+    return `
+      <tr>
+        <td>${escapeHTML(complaintId(item))}</td>
+        <td>${escapeHTML(customerName(item))}</td>
+        <td>${escapeHTML(customer.mobile || "—")}</td>
+        <td>${escapeHTML(item.product || "—")}</td>
+        <td>${escapeHTML(item.serialNumber || "—")}</td>
+        <td>${escapeHTML(locationText(customer))}</td>
+        <td>${Array.isArray(item.proofDocuments) && item.proofDocuments.length ? item.proofDocuments.map(proof => `<button class="btn" type="button" data-proof="${escapeHTML(proof.filename || "")}">Open proof</button>`).join(" ") : "—"}</td>
+        <td>${statusBadge(item.status)}</td>
+      </tr>
+    `;
+  }).join("") : `<tr><td colspan="8" class="empty">No matching complaints.</td></tr>`;
+}
+
+function renderEngineers() {
+  $("engineersTable").innerHTML = engineers.length ? engineers.map(engineer => `
+    <tr>
+      <td>${escapeHTML(engineer.name || "—")}</td>
+      <td>${escapeHTML(engineer.mobile || "—")}</td>
+      <td>${escapeHTML(engineerLocation(engineer))}</td>
+      <td>${engineer.isActive === false ? "Inactive" : "Active"}</td>
+    </tr>
+  `).join("") : `<tr><td colspan="4" class="empty">No engineers found.</td></tr>`;
+}
+
+function areaMatches(engineer, customer) {
+  const state = String(customer.state || "").trim().toLowerCase();
+  const engineerState = String(engineer.state || "").trim().toLowerCase();
+  if (!state || !engineerState || state !== engineerState) return 0;
+
+  const pin = String(customer.pinCode || "").trim();
+  const engineerPin = String(engineer.pinCode || "").trim();
+  if (pin && engineerPin && pin === engineerPin) return 3;
+
+  const city = String(customer.city || "").trim().toLowerCase();
+  const engineerCity = String(engineer.city || "").trim().toLowerCase();
+  if (city && engineerCity && city === engineerCity) return 2;
+  return 0;
+}
+
+function renderAssignments() {
+  const sorted = [...complaints].sort(
+    (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+  );
+
+  $("assignmentsTable").innerHTML = sorted.length ? sorted.map(item => {
+    const customer = getCustomer(item);
+    const assignedId = item.engineer && typeof item.engineer === "object"
+      ? item.engineer._id
+      : item.engineer;
+
+    const options = engineers
+      .filter(engineer => engineer.isActive !== false)
+      .sort((a, b) => areaMatches(b, customer) - areaMatches(a, customer))
+      .map(engineer => {
+        const selected = String(engineer._id) === String(assignedId) ? "selected" : "";
+        const match = areaMatches(engineer, customer);
+        const label = match === 3 ? "PIN match" :
+          match === 2 ? "City match" :
+          match === 1 ? "District match" : "Other area";
+
+        return `<option value="${escapeHTML(engineer._id)}" ${selected}>
+          ${escapeHTML(engineer.name || "Engineer")} — ${escapeHTML(label)}
+        </option>`;
+      }).join("");
+
+    return `
+      <tr>
+        <td>${escapeHTML(complaintId(item))}</td>
+        <td>${escapeHTML(customerName(item))}</td>
+        <td>${escapeHTML(locationText(customer))}</td>
+        <td>${escapeHTML(item.product || "—")}</td>
+        <td>
+          <select id="engineer-${escapeHTML(item._id || item.complaintId)}">
+            <option value="">${assignedId ? "Select engineer" : "Not assigned"}</option>
+            ${options}
+          </select>
+        </td>
+        <td>
+          <button class="btn primary" data-assign="${escapeHTML(item._id || item.complaintId)}">
+            Assign
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("") : `<tr><td colspan="6" class="empty">No complaints available.</td></tr>`;
+}
+
+function renderAll() {
+  renderOverview();
+  renderComplaints();
+  renderEngineers();
+  renderAssignments();
+}
+
+async function createEngineer(event) {
+  event.preventDefault();
+  clearMessage();
+
+  const button = $("saveEngineerButton");
+  button.disabled = true;
+  button.textContent = "Creating...";
+
+  const payload = {
+    name: $("engineerName").value.trim(),
+    mobile: $("engineerMobile").value.trim(),
+    email: $("engineerEmail").value.trim(),
+    password: $("engineerPassword").value,
+    state: $("engineerState").value.trim(),
+    district: $("engineerDistrict").value.trim(),
+    city: $("engineerCity").value.trim(),
+    pinCode: $("engineerPinCode").value.trim()
+  };
+
+  try {
+    await apiRequest(API.engineers, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+
+    $("engineerForm").reset();
+    showMessage("Engineer created successfully.", "success");
+    await loadDashboard();
+  } catch (error) {
+    showMessage(error.message || "Could not create engineer.");
+  } finally {
+    button.disabled = false;
+    button.textContent = "Create engineer";
+  }
+}
+
+async function assignComplaint(id) {
+  const select = $(`engineer-${id}`);
+  const engineerId = select ? select.value : "";
+
+  if (!engineerId) {
+    showMessage("Please select an engineer first.");
+    return;
+  }
+
+  try {
+    await apiRequest(
+      `${API.complaints}/${encodeURIComponent(id)}/assign`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ engineerId })
+      }
+    );
+
+    showMessage("Complaint assignment updated.", "success");
+    await loadDashboard();
+  } catch (error) {
+    showMessage(error.message || "Could not assign complaint.");
+  }
+}
+
+function showSection(name) {
+  document.querySelectorAll(".section").forEach(section => {
+    section.classList.toggle("active", section.id === `section-${name}`);
+  });
+
+  document.querySelectorAll(".nav").forEach(button => {
+    button.classList.toggle("active", button.dataset.section === name);
+  });
+
+  const titles = {
+    overview: "Admin Dashboard",
+    complaints: "All Complaints",
+    engineers: "Manage Engineers",
+    assignments: "Complaint Assignments"
+  };
+
+  $("pageTitle").textContent = titles[name] || "Admin Dashboard";
+}
+
+document.querySelectorAll(".nav").forEach(button => {
+  button.addEventListener("click", () => showSection(button.dataset.section));
+});
+
+$("refreshButton").addEventListener("click", loadDashboard);
+$("complaintSearch").addEventListener("input", renderComplaints);
+$("statusFilter").addEventListener("change", renderComplaints);
+async function openProof(filename) {
+  if (!filename) return;
+  try {
+    const response = await fetch(`/api/admin/proof/${encodeURIComponent(filename)}`, {
+      headers: { Authorization: "Bearer " + token }
+    });
+    if (!response.ok) throw new Error("Could not open proof document.");
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noopener";
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch (error) {
+    showMessage(error.message || "Could not open proof document.");
+  }
+}
+
+$("engineerForm").addEventListener("submit", createEngineer);
+
+document.addEventListener("click", event => {
+  const proofButton = event.target.closest("[data-proof]");
+  if (proofButton) openProof(proofButton.dataset.proof);
+  const button = event.target.closest("[data-assign]");
+  if (button) assignComplaint(button.dataset.assign);
+});
+
+$("logoutButton").addEventListener("click", () => {
+  sessionStorage.removeItem(TOKEN_KEY);
+  window.location.href = "/admin.html";
+});
+
+if (!getToken()) {
+  window.location.href = "/admin.html";
+} else {
+  loadDashboard();
+}
+</script>
+</body>
+</html>

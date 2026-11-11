@@ -1,0 +1,158 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Engineer Login | Support Hub</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      color: #eaf0f7;
+      background: linear-gradient(135deg, #081321, #122b3a);
+    }
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      padding: 32px;
+      border: 1px solid #263c4e;
+      border-radius: 18px;
+      background: #101e2c;
+      box-shadow: 0 18px 50px #0005;
+    }
+    .brand {
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+      border-radius: 15px;
+      background: #14b8a6;
+      color: #062b2a;
+      font-size: 25px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    h1 { margin: 0 0 8px; font-size: 26px; }
+    .subtitle { margin: 0 0 26px; color: #9db0c2; line-height: 1.5; }
+    label { display: block; margin: 17px 0 8px; font-size: 14px; }
+    input {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid #354b5e;
+      border-radius: 10px;
+      background: #0b1723;
+      color: #fff;
+      outline: none;
+      font-size: 15px;
+    }
+    input:focus { border-color: #14b8a6; }
+    button {
+      width: 100%;
+      margin-top: 24px;
+      padding: 14px;
+      border: 0;
+      border-radius: 10px;
+      background: #14b8a6;
+      color: #062b2a;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .65; cursor: wait; }
+    #message {
+      display: none;
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 9px;
+      font-size: 14px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+    #message.error { display: block; background: #4a2028; color: #ffd9de; }
+    #message.success { display: block; background: #123d37; color: #b9fff0; }
+    .footer { margin-top: 22px; color: #8398aa; font-size: 12px; text-align: center; }
+  </style>
+</head>
+<body>
+  <main class="login-card">
+    <div class="brand">SH</div>
+    <h1>Engineer Login</h1>
+    <p class="subtitle">Sign in to view and manage your assigned service complaints.</p>
+
+    <form id="loginForm">
+      <label for="mobile">Registered mobile number</label>
+      <input id="mobile" name="mobile" type="tel" inputmode="tel"
+             autocomplete="username" placeholder="Enter your mobile number"
+             required>
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password"
+             autocomplete="current-password" placeholder="Enter your password"
+             required>
+
+      <button id="loginButton" type="submit">Sign In</button>
+      <div id="message" role="alert" aria-live="polite"></div>
+    </form>
+
+    <div class="footer">Support Hub · Engineer Portal</div>
+  </main>
+
+  <script>
+    const form = document.getElementById("loginForm");
+    const button = document.getElementById("loginButton");
+    const message = document.getElementById("message");
+
+    // If an engineer token already exists, open the dashboard.
+    if (sessionStorage.getItem("supportHubEngineerToken")) {
+      window.location.replace("/engineer-dashboard.html");
+    }
+
+    function showMessage(text, type) {
+      message.textContent = text;
+      message.className = type;
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      message.className = "";
+      message.textContent = "";
+      button.disabled = true;
+      button.textContent = "Signing in...";
+
+      const mobile = document.getElementById("mobile").value.trim();
+      const password = document.getElementById("password").value;
+
+      try {
+        const response = await fetch("/api/auth/engineer/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mobile, password })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || !data.token) {
+          throw new Error(data.message || "Login failed. Check your mobile number and password.");
+        }
+
+        // Do not save a token unless the server returns a successful login.
+        sessionStorage.setItem("supportHubEngineerToken", data.token);
+        window.location.replace("/engineer-dashboard.html");
+      } catch (error) {
+        showMessage(error.message || "Unable to connect to the server.", "error");
+      } finally {
+        button.disabled = false;
+        button.textContent = "Sign In";
+      }
+    });
+  </script>
+</body>
+</html>
+```

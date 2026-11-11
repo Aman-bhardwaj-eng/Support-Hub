@@ -1,0 +1,670 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Engineer Dashboard | Support Hub</title>
+  <style>
+    :root {
+      --bg: #f3f6fa;
+      --surface: #ffffff;
+      --text: #172536;
+      --muted: #718096;
+      --border: #e0e7ef;
+      --primary: #0f766e;
+      --primary-light: #d9f5ef;
+      --nav: #102132;
+      --danger: #b42332;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      min-height: 72px;
+      padding: 16px 26px;
+      background: var(--nav);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand { font-size: 21px; font-weight: 700; }
+    .brand span { color: #4fe0c4; }
+    .header-right { display: flex; align-items: center; gap: 14px; }
+
+    button, input, select, textarea { font: inherit; }
+
+    button {
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button:disabled { opacity: .6; cursor: not-allowed; }
+
+    .logout {
+      background: #263d50;
+      color: white;
+      border: 1px solid #42576a;
+    }
+
+    main { max-width: 1440px; margin: auto; padding: 28px; }
+    .heading-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    h1 { margin: 0 0 7px; font-size: 27px; }
+    h2 { margin: 0 0 16px; font-size: 18px; }
+    .muted { color: var(--muted); font-size: 14px; line-height: 1.5; }
+
+    .refresh {
+      background: var(--primary);
+      color: white;
+      white-space: nowrap;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat, .panel, .complaint-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .stat { padding: 20px; }
+    .stat-label { color: var(--muted); font-size: 13px; }
+    .stat-number { font-size: 29px; font-weight: 700; margin-top: 10px; }
+
+    .panel { padding: 22px; margin-bottom: 22px; }
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(200px, 1fr) 220px;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid #d4dde7;
+      border-radius: 9px;
+      padding: 12px;
+      background: white;
+      color: var(--text);
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+    textarea { resize: vertical; min-height: 95px; }
+
+    .complaint-list { display: grid; gap: 14px; }
+
+    .complaint-card { padding: 19px; }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .complaint-id { font-weight: 700; font-size: 16px; overflow-wrap: anywhere; }
+    .product { margin-top: 6px; color: var(--muted); font-size: 13px; }
+
+    .status {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #edf1f5;
+      color: #34475b;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .status.OPEN { background: #fff1d6; color: #865500; }
+    .status.ASSIGNED { background: #e4edff; color: #214fa1; }
+    .status.ENGINEER_ACCEPTED,
+    .status.VISIT_STARTED { background: #d9f5ef; color: #08675d; }
+    .status.COMPLETED { background: #dff5e5; color: #176537; }
+    .status.REVISIT_REQUIRED { background: #ffe6e6; color: #a12828; }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px 22px;
+      margin: 15px 0;
+    }
+
+    .detail-label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .detail-value {
+      font-size: 14px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    .issue-box {
+      padding: 12px;
+      border-radius: 9px;
+      background: #f7f9fc;
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 16px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-secondary { background: #e9eef4; color: #25384b; }
+    .btn-danger { background: #ffeded; color: var(--danger); }
+
+    .resolution {
+      display: none;
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 10px;
+      background: #f6f9fc;
+      border: 1px solid var(--border);
+    }
+
+    .resolution.open { display: block; }
+    .resolution label { display: block; margin: 12px 0 7px; font-size: 13px; font-weight: 600; }
+    .resolution button { margin-top: 12px; }
+
+    .message {
+      display: none;
+      padding: 13px 15px;
+      border-radius: 9px;
+      margin-bottom: 18px;
+      font-size: 14px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .message.error { display: block; background: #ffeded; color: #9d2634; }
+    .message.success { display: block; background: #dff7ed; color: #08664f; }
+    .empty { padding: 32px 16px; text-align: center; color: var(--muted); }
+
+    footer { padding: 20px; text-align: center; color: var(--muted); font-size: 12px; }
+
+    @media (max-width: 850px) {
+      main { padding: 20px; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 560px) {
+      header { padding: 15px; }
+      main { padding: 14px; }
+      .brand { font-size: 18px; }
+      .header-right { gap: 8px; }
+      .heading-row { flex-direction: column; }
+      .stats { gap: 10px; }
+      .stat { padding: 15px; }
+      .stat-number { font-size: 24px; }
+      .filters { grid-template-columns: 1fr; }
+      .details-grid { grid-template-columns: 1fr; }
+      .panel { padding: 15px; }
+      .complaint-card { padding: 15px; }
+      .card-top { flex-direction: column; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="brand"><span>SH</span> Support Hub</div>
+    <div class="header-right">
+      <span id="engineerName" class="muted" style="color:#d4e2ee">Engineer Portal</span>
+      <button class="logout" id="logoutButton" type="button">Logout</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="heading-row">
+      <div>
+        <h1>My Service Complaints</h1>
+        <div class="muted">View assigned complaints and update service progress.</div>
+      </div>
+      <button class="refresh" id="refreshButton" type="button">Refresh</button>
+    </div>
+
+    <div id="message" class="message" role="status" aria-live="polite"></div>
+
+    <section class="stats" aria-label="Complaint summary">
+      <div class="stat">
+        <div class="stat-label">Total Loaded</div>
+        <div class="stat-number" id="totalCount">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Assigned / Open</div>
+        <div class="stat-number" id="assignedCount">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">In Progress</div>
+        <div class="stat-number" id="progressCount">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Completed</div>
+        <div class="stat-number" id="completedCount">0</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Complaint List</h2>
+      <div class="filters">
+        <input id="searchInput" type="search"
+               placeholder="Search complaint ID, customer, phone or serial number">
+        <select id="statusFilter">
+          <option value="">All statuses</option>
+          <option value="ASSIGNED">Assigned</option>
+          <option value="ENGINEER_ACCEPTED">Accepted</option>
+          <option value="VISIT_STARTED">Visit / Work started</option>
+          <option value="RESOLUTION_SUBMITTED">Resolution submitted</option>
+          <option value="OTP_SENT">OTP sent</option>
+          <option value="COMPLETED">Completed</option>
+          <option value="REVISIT_REQUIRED">Revisit required</option>
+        </select>
+      </div>
+
+      <div id="complaintList" class="complaint-list">
+        <div class="empty">Loading complaints...</div>
+      </div>
+    </section>
+  </main>
+
+  <footer>Support Hub · Engineer Service Portal</footer>
+
+  <script>
+    const tokenKey = "supportHubEngineerToken";
+    const token = sessionStorage.getItem(tokenKey);
+
+    if (!token) {
+      window.location.replace("/engineer-login.html");
+    }
+
+    const complaintList = document.getElementById("complaintList");
+    const messageBox = document.getElementById("message");
+
+    let complaints = [];
+
+    function showMessage(text, type = "error") {
+      messageBox.textContent = text;
+      messageBox.className = "message " + type;
+    }
+
+    function clearMessage() {
+      messageBox.textContent = "";
+      messageBox.className = "message";
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[char]);
+    }
+
+    function normalizeStatus(status) {
+      return String(status || "OPEN").toUpperCase();
+    }
+
+    function formatDate(value) {
+      if (!value) return "Not available";
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? "Not available" : date.toLocaleString();
+    }
+
+    function getCustomer(c) {
+      return c.customer || {};
+    }
+
+    function getCustomerName(c) {
+      const customer = getCustomer(c);
+      return customer.name || c.customerName || "Not provided";
+    }
+
+    function getCustomerMobile(c) {
+      const customer = getCustomer(c);
+      return customer.mobile || c.mobile || c.customerMobile || "Not provided";
+    }
+
+    function getAddress(c) {
+      const customer = getCustomer(c);
+      return [
+        customer.area || c.area,
+        customer.city || c.city,
+        customer.state || c.state,
+        customer.pinCode || c.pinCode
+      ].filter(Boolean).join(", ") || "Address not provided";
+    }
+
+    function getId(c) {
+      // Prefer the MongoDB _id because protected API routes often use it.
+      return c._id || c.id || c.complaintId;
+    }
+
+    function getComplaintId(c) {
+      return c.complaintId || c._id || "Complaint";
+    }
+
+    async function apiRequest(url, options = {}) {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token,
+          ...(options.headers || {})
+        }
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (response.status === 401 || response.status === 403) {
+        sessionStorage.removeItem(tokenKey);
+        window.location.replace("/engineer-login.html");
+        throw new Error("Your session expired or access was denied. Please log in again.");
+      }
+
+      if (!response.ok || data.success === false) {
+        throw new Error(data.message || ("Request failed (" + response.status + ")."));
+      }
+
+      return data;
+    }
+
+    function extractComplaints(data) {
+      if (Array.isArray(data)) return data;
+      if (Array.isArray(data.complaints)) return data.complaints;
+      if (Array.isArray(data.data)) return data.data;
+      if (data.data && Array.isArray(data.data.complaints)) {
+        return data.data.complaints;
+      }
+      return [];
+    }
+
+    function updateStats() {
+      document.getElementById("totalCount").textContent = complaints.length;
+
+      document.getElementById("assignedCount").textContent =
+        complaints.filter(c => ["OPEN", "ASSIGNED"].includes(normalizeStatus(c.status))).length;
+
+      document.getElementById("progressCount").textContent =
+        complaints.filter(c => [
+          "ENGINEER_ACCEPTED",
+          "VISIT_STARTED",
+          "RESOLUTION_SUBMITTED",
+          "OTP_SENT"
+        ].includes(normalizeStatus(c.status))).length;
+
+      document.getElementById("completedCount").textContent =
+        complaints.filter(c => normalizeStatus(c.status) === "COMPLETED").length;
+    }
+
+    function complaintCard(c) {
+      const status = normalizeStatus(c.status);
+      const safeStatus = /^[A-Z_]+$/.test(status) ? status : "OPEN";
+      const id = getId(c);
+      const customer = getCustomer(c);
+      const product = c.product || c.productName || "Not provided";
+      const description = c.description || c.issueDescription || "No issue description provided.";
+      const serial = c.serialNumber || "Not provided";
+      const model = c.model || c.modelNumber || "Not provided";
+      const created = c.createdAt || c.created_at;
+      const canAccept = status === "ASSIGNED";
+      const canStart = status === "ENGINEER_ACCEPTED";
+      const canResolve = ["ENGINEER_ACCEPTED", "VISIT_STARTED"].includes(status);
+      const isFinished = status === "COMPLETED";
+
+      return `
+        <article class="complaint-card">
+          <div class="card-top">
+            <div>
+              <div class="complaint-id">${escapeHTML(getComplaintId(c))}</div>
+              <div class="product">${escapeHTML(product)} · ${escapeHTML(model)}</div>
+            </div>
+            <span class="status ${safeStatus}">${escapeHTML(status.replaceAll("_", " "))}</span>
+          </div>
+
+          <div class="details-grid">
+            <div>
+              <span class="detail-label">Customer</span>
+              <div class="detail-value">${escapeHTML(getCustomerName(c))}</div>
+            </div>
+            <div>
+              <span class="detail-label">Mobile</span>
+              <div class="detail-value">${escapeHTML(getCustomerMobile(c))}</div>
+            </div>
+            <div>
+              <span class="detail-label">Address / Service Area</span>
+              <div class="detail-value">${escapeHTML(getAddress(c))}</div>
+            </div>
+            <div>
+              <span class="detail-label">Serial Number</span>
+              <div class="detail-value">${escapeHTML(serial)}</div>
+            </div>
+            <div>
+              <span class="detail-label">Registered</span>
+              <div class="detail-value">${escapeHTML(formatDate(created))}</div>
+            </div>
+            <div>
+              <span class="detail-label">Complaint ID</span>
+              <div class="detail-value">${escapeHTML(getComplaintId(c))}</div>
+            </div>
+          </div>
+
+          <span class="detail-label">Issue Description</span>
+          <div class="issue-box">${escapeHTML(description)}</div>
+
+          ${c.resolution && c.resolution.remarks ? `
+            <div style="margin-top:12px">
+              <span class="detail-label">Submitted Resolution</span>
+              <div class="issue-box">${escapeHTML(c.resolution.remarks)}</div>
+            </div>` : ""}
+
+          <div class="actions">
+            ${canAccept ? `<button class="btn-primary" data-action="accept" data-id="${escapeHTML(id)}">Accept Complaint</button>` : ""}
+            ${canStart ? `<button class="btn-primary" data-action="start" data-id="${escapeHTML(id)}">Start Visit / Work</button>` : ""}
+            ${canResolve ? `<button class="btn-secondary" data-action="toggle-resolution" data-id="${escapeHTML(id)}">Submit Resolution</button>` : ""}
+            ${isFinished ? `<span class="muted">This complaint is completed.</span>` : ""}
+          </div>
+
+          ${canResolve ? `
+            <form class="resolution" id="resolution-${escapeHTML(id)}" data-id="${escapeHTML(id)}">
+              <label for="remarks-${escapeHTML(id)}">Work performed / resolution details *</label>
+              <textarea id="remarks-${escapeHTML(id)}" name="remarks" required
+                placeholder="Describe the fault found and work performed"></textarea>
+
+              <label for="parts-${escapeHTML(id)}">Parts used (if any)</label>
+              <input id="parts-${escapeHTML(id)}" name="partsUsed"
+                placeholder="Enter parts used, or leave blank">
+
+              <button class="btn-primary" type="submit">Submit Resolution</button>
+            </form>` : ""}
+        </article>
+      `;
+    }
+
+    function renderComplaints() {
+      const query = document.getElementById("searchInput").value.trim().toLowerCase();
+      const statusFilter = document.getElementById("statusFilter").value;
+
+      const filtered = complaints.filter(c => {
+        const customer = getCustomer(c);
+        const searchable = [
+          c.complaintId, c._id, customer.name, customer.mobile,
+          customer.area, customer.city, customer.state,
+          c.serialNumber, c.product, c.model, c.description
+        ].filter(Boolean).join(" ").toLowerCase();
+
+        return searchable.includes(query) &&
+          (!statusFilter || normalizeStatus(c.status) === statusFilter);
+      });
+
+      if (!filtered.length) {
+        complaintList.innerHTML = '<div class="empty">No complaints match these filters.</div>';
+        return;
+      }
+
+      complaintList.innerHTML = filtered.map(complaintCard).join("");
+    }
+
+    async function loadComplaints() {
+      clearMessage();
+      complaintList.innerHTML = '<div class="empty">Loading complaints...</div>';
+
+      try {
+        // This endpoint must exist in routes/engineerRoutes.js.
+        const data = await apiRequest("/api/engineer/complaints");
+        complaints = extractComplaints(data);
+        updateStats();
+        renderComplaints();
+      } catch (error) {
+        complaintList.innerHTML = "";
+        showMessage(
+          error.message + " If the endpoint is missing, update routes/engineerRoutes.js to provide GET /api/engineer/complaints.",
+          "error"
+        );
+      }
+    }
+
+    async function updateComplaint(id, action, body = {}) {
+      clearMessage();
+
+      try {
+        // These action routes must be implemented in routes/engineerRoutes.js.
+        const endpointByAction = {
+          accept: `/api/engineer/complaints/${encodeURIComponent(id)}/accept`,
+          start: `/api/engineer/complaints/${encodeURIComponent(id)}/start`,
+          resolution: `/api/engineer/complaints/${encodeURIComponent(id)}/resolution`
+        };
+
+        const endpoint = endpointByAction[action];
+        if (!endpoint) throw new Error("Unsupported action.");
+
+        const data = await apiRequest(endpoint, {
+          method: "PATCH",
+          body: JSON.stringify(body)
+        });
+
+        showMessage(data.message || "Complaint updated successfully.", "success");
+        await loadComplaints();
+      } catch (error) {
+        showMessage(
+          error.message + " Make sure this action is implemented in routes/engineerRoutes.js.",
+          "error"
+        );
+      }
+    }
+
+    complaintList.addEventListener("click", async (event) => {
+      const button = event.target.closest("button[data-action]");
+      if (!button) return;
+
+      const action = button.dataset.action;
+      const id = button.dataset.id;
+
+      if (action === "toggle-resolution") {
+        const form = document.getElementById("resolution-" + CSS.escape(id));
+        if (form) form.classList.toggle("open");
+        return;
+      }
+
+      if (!id) {
+        showMessage("Complaint ID is missing.", "error");
+        return;
+      }
+
+      if (action === "accept") {
+        await updateComplaint(id, "accept");
+      } else if (action === "start") {
+        await updateComplaint(id, "start");
+      }
+    });
+
+    complaintList.addEventListener("submit", async (event) => {
+      const form = event.target.closest("form.resolution");
+      if (!form) return;
+
+      event.preventDefault();
+
+      const remarks = form.elements.remarks.value.trim();
+      const partsUsed = form.elements.partsUsed.value.trim();
+
+      if (!remarks) {
+        showMessage("Please enter the resolution details.", "error");
+        return;
+      }
+
+      const submitButton = form.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      submitButton.textContent = "Submitting...";
+
+      try {
+        await updateComplaint(form.dataset.id, "resolution", {
+          remarks,
+          partsUsed
+        });
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Submit Resolution";
+      }
+    });
+
+    document.getElementById("searchInput").addEventListener("input", renderComplaints);
+    document.getElementById("statusFilter").addEventListener("change", renderComplaints);
+    document.getElementById("refreshButton").addEventListener("click", loadComplaints);
+
+    document.getElementById("logoutButton").addEventListener("click", () => {
+      sessionStorage.removeItem(tokenKey);
+      window.location.replace("/engineer-login.html");
+    });
+
+    // Use the engineer name only if the login API returned it and it was saved.
+    const savedName = sessionStorage.getItem("supportHubEngineerName");
+    if (savedName) {
+      document.getElementById("engineerName").textContent = savedName;
+    }
+
+    if (token) loadComplaints();
+  </script>
+</body>
+</html>
+```
